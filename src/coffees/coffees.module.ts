@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { CoffessService } from 'src/coffess/coffess.service';
+import { CoffeesController } from './coffees.controller';
 
-@Module({})
+@Module({ controllers: [CoffeesController], providers: [CoffessService] })
 export class CoffeesModule {}
