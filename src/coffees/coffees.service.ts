@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Coffee } from 'src/coffees/entities/coffee.entity';
 
 @Injectable()
-export class CoffessService {
+export class CoffeesService {
   private coffees: Coffee[] = [
     {
       id: 1,
