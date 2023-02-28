@@ -12,7 +12,10 @@ import { Flavor } from './entities/flavor.entity';
   controllers: [CoffeesController],
   providers: [
     CoffeesService,
-    { provide: COFFEE_BRANDS, useValue: ['tim hortornado', 'starbuckeroo'] },
+    {
+      provide: COFFEE_BRANDS,
+      useFactory: () => ['tim hortornado', 'starbuckeroo'],
+    },
   ],
   exports: [CoffeesService],
 })
