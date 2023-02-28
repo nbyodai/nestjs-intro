@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CoffeesService } from 'src/coffees/coffees.service';
 import { Event } from 'src/events/entities/event.entity';
+import { COFFEE_BRANDS } from './coffees.constants';
 import { CoffeesController } from './coffees.controller';
 import { Coffee } from './entities/coffee.entity';
 import { Flavor } from './entities/flavor.entity';
@@ -11,7 +12,7 @@ import { Flavor } from './entities/flavor.entity';
   controllers: [CoffeesController],
   providers: [
     CoffeesService,
-    { provide: 'COFFEE_BRANDS', useValue: ['tim hortornado', 'starbuckeroo'] },
+    { provide: COFFEE_BRANDS, useValue: ['tim hortornado', 'starbuckeroo'] },
   ],
   exports: [CoffeesService],
 })
