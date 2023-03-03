@@ -7,6 +7,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CoffeesModule } from './coffees/coffees.module';
 import { CoffeeRatingModule } from './coffee-rating/coffee-rating.module';
+import { APP_GUARD } from '@nestjs/core';
+import { ApiKeyGuard } from './common/guards/api-key.guard';
 
 @Module({
   imports: [
@@ -30,6 +32,12 @@ import { CoffeeRatingModule } from './coffee-rating/coffee-rating.module';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ApiKeyGuard,
+    },
+  ],
 })
 export class AppModule {}
