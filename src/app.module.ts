@@ -7,8 +7,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CoffeesModule } from './coffees/coffees.module';
 import { CoffeeRatingModule } from './coffee-rating/coffee-rating.module';
-import { APP_GUARD } from '@nestjs/core';
-import { ApiKeyGuard } from './common/guards/api-key.guard';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -30,14 +29,9 @@ import { ApiKeyGuard } from './common/guards/api-key.guard';
       autoLoadEntities: true, // helps load modules automatically instead of specifying the entities array
       synchronize: true, // TypeORM entities syncs with database everytime the app is run, great for development but disable in production
     }),
+    CommonModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_GUARD,
-      useClass: ApiKeyGuard,
-    },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}
