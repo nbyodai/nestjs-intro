@@ -11,6 +11,7 @@ import { Event } from 'src/events/entities/event.entity';
 import { COFFEE_BRANDS } from './coffees.constants';
 import { ConfigType } from '@nestjs/config';
 import coffeesConfig from './coffees.config';
+import { PrismaService } from 'src/prisma-service.service';
 
 @Injectable()
 export class CoffeesService {
@@ -23,16 +24,14 @@ export class CoffeesService {
     private readonly dataSource: DataSource,
     @Inject(coffeesConfig.KEY)
     private readonly coffeesConfiguration: ConfigType<typeof coffeesConfig>,
+    private prisma: PrismaService,
   ) {
     console.log(coffeesConfiguration.foo);
   }
 
   findAll(paginationQuery: PaginationQueryDto) {
     const { limit, offset } = paginationQuery;
-    return this.coffeeRepository.find({
-      relations: {
-        flavors: true,
-      },
+    return this.prisma.coffee.findMany({
       skip: offset,
       take: limit,
     });
