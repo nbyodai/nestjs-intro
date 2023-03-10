@@ -12,17 +12,9 @@ model coffee {
   name                  String                  @db.VarChar
   brand                 String                  @db.VarChar
   recommendations       Int                     @default(0)
-  coffee_flavors_flavor coffee_flavors_flavor[]
+  flavors flavor[]
 }
 
-model coffee_flavors_flavor {
-  coffeeId Int
-  flavorId Int
-  flavor   flavor @relation(fields: [flavorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  coffee   coffee @relation(fields: [coffeeId], references: [id], onDelete: Cascade)
-
-  @@id([coffeeId, flavorId])
-}
 
 model event {
   id      Int    @id @default(autoincrement())
@@ -34,8 +26,8 @@ model event {
 
 model flavor {
   id                    Int                     @id @default(autoincrement())
-  name                  String                  @db.VarChar
-  coffee_flavors_flavor coffee_flavors_flavor[]
+  name                  String                  @db.VarChar @unique
+  coffees coffee[]
 }
 
 model orders {

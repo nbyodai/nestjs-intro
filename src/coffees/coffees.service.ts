@@ -38,9 +38,9 @@ export class CoffeesService {
   }
 
   async findOne(id: string) {
-    const coffee = await this.coffeeRepository.findOne({
+    const coffee = await this.prisma.coffee.findUnique({
       where: { id: +id },
-      relations: {
+      include: {
         flavors: true,
       },
     });
@@ -54,11 +54,17 @@ export class CoffeesService {
     const flavors = await Promise.all(
       createCoffeeDto.flavors.map((name) => this.preloadFlavorByName(name)),
     );
-    const coffee = this.coffeeRepository.create({
-      ...createCoffeeDto,
-      flavors,
+    const coffee = this.prisma.coffee.create({
+      data: {
+        ...createCoffeeDto,
+        flavors: {
+          connect: flavors.map(({ id }) => ({
+            id,
+          })),
+        },
+      },
     });
-    return this.coffeeRepository.save(coffee);
+    return coffee;
   }
 
   async update(id: string, updateCoffeeDto: UpdateCoffeeDto) {
@@ -81,9 +87,10 @@ export class CoffeesService {
 
   async remove(id: string) {
     const coffee = await this.findOne(id);
-    return this.coffeeRepository.remove(coffee);
+    // return this.coffeeRepository.remove(coffee);
   }
 
+  // Handling Transactions
   async recommendCoffee(coffee: Coffee) {
     const queryRunner = this.dataSource.createQueryRunner();
 
@@ -109,13 +116,16 @@ export class CoffeesService {
     }
   }
 
-  private async preloadFlavorByName(name: string): Promise<Flavor> {
-    const existingFlavor = await this.flavorRepository.findOne({
+  private async preloadFlavorByName(name: string): Promise<{ id: number }> {
+    const existingFlavor = await this.prisma.flavor.findUnique({
       where: { name },
+      include: { coffees: true },
     });
     if (existingFlavor) {
-      return existingFlavor;
+      return { id: existingFlavor.id };
     }
-    return this.flavorRepository.create({ name });
+
+    const newFlavor = await this.prisma.flavor.create({ data: { name } });
+    return { id: newFlavor.id };
   }
 }
