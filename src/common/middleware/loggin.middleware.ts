@@ -6,6 +6,8 @@ export class LogginMiddleware implements NestMiddleware {
     console.time('Request-response time');
     console.log('Hi from middleware!');
 
+    req.userPermissions = ['doctor']; // we can bind permissions like this here! the Possibilities!!
+
     res.on('finish', () => console.timeEnd('Request-response time'));
     next();
   }

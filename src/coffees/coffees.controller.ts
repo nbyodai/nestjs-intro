@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
 import { CoffeesService } from 'src/coffees/coffees.service';
 import { Protocol } from 'src/common/decorators/protocol.decorator';
@@ -41,8 +42,15 @@ export class CoffeesController {
     return this.coffeesService.create(createCoffeeDto);
   }
 
+  @Public()
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCoffeeDto: UpdateCoffeeDto) {
+  // @UseGuard(MatchPermissions)
+  update(
+    @Req() request,
+    @Param('id') id: string,
+    @Body() updateCoffeeDto: UpdateCoffeeDto,
+  ) {
+    // console.log('request', request);
     return this.coffeesService.update(id, updateCoffeeDto);
   }
 
