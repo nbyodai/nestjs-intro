@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model coffee {
+  id                    Int                     @id @default(autoincrement())
+  name                  String                  @db.VarChar
+  brand                 String                  @db.VarChar
+  recommendations       Int                     @default(0)
+  coffee_flavors_flavor coffee_flavors_flavor[]
+}
+
+model coffee_flavors_flavor {
+  coffeeId Int
+  flavorId Int
+  flavor   flavor @relation(fields: [flavorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  coffee   coffee @relation(fields: [coffeeId], references: [id], onDelete: Cascade)
+
+  @@id([coffeeId, flavorId])
+}
+
+model event {
+  id      Int    @id @default(autoincrement())
+  type    String @db.VarChar
+  name    String @db.VarChar
+  payload Json   @db.Json
+
+}
+
+model flavor {
+  id                    Int                     @id @default(autoincrement())
+  name                  String                  @db.VarChar
+  coffee_flavors_flavor coffee_flavors_flavor[]
+}
+
+model orders {
+  id Int  @id @default(autoincrement())
+  name String 
+}
