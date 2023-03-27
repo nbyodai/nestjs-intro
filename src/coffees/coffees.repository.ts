@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/database/prisma.service';
+import { PrismaService } from '../database/prisma.service';
 import { CreateCoffeeDto } from './dto/create-coffee.dto';
 import { UpdateCoffeeDto } from './dto/update-coffee.dto';
 
@@ -51,15 +51,19 @@ export class CoffeesRepository {
       throw new NotFoundException(`Coffee #${id} not found`);
     }
 
-    const flavors = await Promise.all(
-      updateCoffeeDto.flavors.map((name) => this.preloadFlavorByName(name)),
-    );
+    const { flavors } = updateCoffeeDto;
+    let flavorIds: { id: number }[] = [];
+    if (flavors) {
+      flavorIds = await Promise.all(
+        flavors.map((name) => this.preloadFlavorByName(name)),
+      );
+    }
     return this.prisma.coffee.update({
       where: { id: coffee.id },
       data: {
         ...updateCoffeeDto,
         flavors: {
-          connect: flavors.map(({ id }) => ({
+          connect: flavorIds.map(({ id }) => ({
             id,
           })),
         },
