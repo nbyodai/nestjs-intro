@@ -1,27 +1,17 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { ConfigType } from '@nestjs/config';
 
-import { Coffee } from 'src/coffees/entities/coffee.entity';
 import { CreateCoffeeDto } from './dto/create-coffee.dto';
 import { UpdateCoffeeDto } from './dto/update-coffee.dto';
-import { Flavor } from './entities/flavor.entity';
-import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
-import { Event } from 'src/events/entities/event.entity';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { COFFEE_BRANDS } from './coffees.constants';
-import { ConfigType } from '@nestjs/config';
 import coffeesConfig from './coffees.config';
-import { PrismaService } from 'src/prisma-service.service';
+import { PrismaService } from '../prisma-service.service';
 
 @Injectable()
 export class CoffeesService {
   constructor(
-    @InjectRepository(Coffee)
-    private readonly coffeeRepository: Repository<Coffee>,
-    @InjectRepository(Flavor)
-    private readonly flavorRepository: Repository<Flavor>,
     @Inject(COFFEE_BRANDS) coffeeBrands: string[],
-    private readonly dataSource: DataSource,
     @Inject(coffeesConfig.KEY)
     private readonly coffeesConfiguration: ConfigType<typeof coffeesConfig>,
     private prisma: PrismaService,
@@ -68,53 +58,56 @@ export class CoffeesService {
   }
 
   async update(id: string, updateCoffeeDto: UpdateCoffeeDto) {
-    const flavors =
-      updateCoffeeDto.flavors &&
-      (await Promise.all(
-        updateCoffeeDto.flavors.map((name) => this.preloadFlavorByName(name)),
-      ));
-
-    const coffee = await this.coffeeRepository.preload({
-      id: +id,
-      ...updateCoffeeDto,
-      flavors,
-    });
+    const coffee = await this.findOne(id);
     if (!coffee) {
       throw new NotFoundException(`Coffee #${id} not found`);
     }
-    return this.coffeeRepository.save(coffee);
+
+    const flavors = await Promise.all(
+      updateCoffeeDto.flavors.map((name) => this.preloadFlavorByName(name)),
+    );
+    return this.prisma.coffee.update({
+      where: { id: coffee.id },
+      data: {
+        ...updateCoffeeDto,
+        flavors: {
+          connect: flavors.map(({ id }) => ({
+            id,
+          })),
+        },
+      },
+    });
   }
 
   async remove(id: string) {
-    const coffee = await this.findOne(id);
-    // return this.coffeeRepository.remove(coffee);
+    return this.prisma.coffee.delete({ where: { id: +id } });
   }
 
   // Handling Transactions
-  async recommendCoffee(coffee: Coffee) {
-    const queryRunner = this.dataSource.createQueryRunner();
+  // async recommendCoffee(coffee: Coffee) {
+  //   const queryRunner = this.dataSource.createQueryRunner();
 
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+  //   await queryRunner.connect();
+  //   await queryRunner.startTransaction();
 
-    try {
-      coffee.recommendations++;
+  //   try {
+  //     coffee.recommendations++;
 
-      const recommendEvent = new Event();
-      recommendEvent.name = 'recommend_coffee';
-      recommendEvent.type = 'coffee';
-      recommendEvent.payload = { coffeeId: coffee.id };
+  //     const recommendEvent = new Event();
+  //     recommendEvent.name = 'recommend_coffee';
+  //     recommendEvent.type = 'coffee';
+  //     recommendEvent.payload = { coffeeId: coffee.id };
 
-      await queryRunner.manager.save(coffee);
-      await queryRunner.manager.save(recommendEvent);
+  //     await queryRunner.manager.save(coffee);
+  //     await queryRunner.manager.save(recommendEvent);
 
-      await queryRunner.commitTransaction();
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-    } finally {
-      await queryRunner.release();
-    }
-  }
+  //     await queryRunner.commitTransaction();
+  //   } catch (err) {
+  //     await queryRunner.rollbackTransaction();
+  //   } finally {
+  //     await queryRunner.release();
+  //   }
+  // }
 
   private async preloadFlavorByName(name: string): Promise<{ id: number }> {
     const existingFlavor = await this.prisma.flavor.findUnique({

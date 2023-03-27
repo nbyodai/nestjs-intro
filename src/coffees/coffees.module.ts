@@ -1,21 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppModule } from 'src/app.module';
+
 import { CoffeesService } from 'src/coffees/coffees.service';
-import { Event } from 'src/events/entities/event.entity';
 import { PrismaService } from 'src/prisma-service.service';
 import coffeesConfig from './coffees.config';
 import { COFFEE_BRANDS } from './coffees.constants';
 import { CoffeesController } from './coffees.controller';
-import { Coffee } from './entities/coffee.entity';
-import { Flavor } from './entities/flavor.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Coffee, Flavor, Event]),
-    ConfigModule.forFeature(coffeesConfig),
-  ],
+  imports: [ConfigModule.forFeature(coffeesConfig)],
   controllers: [CoffeesController],
   providers: [
     PrismaService,

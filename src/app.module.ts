@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from '@hapi/joi';
 
@@ -19,16 +18,6 @@ import { CommonModule } from './common/common.module';
     }),
     CoffeesModule,
     CoffeeRatingModule,
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DATABASE_HOST,
-      port: +process.env.DATABASE_PORT,
-      username: process.env.DATABASE_USER,
-      password: process.env.DATABASE_PASSWORD,
-      database: process.env.DATABASE_NAME,
-      autoLoadEntities: true, // helps load modules automatically instead of specifying the entities array
-      synchronize: true, // TypeORM entities syncs with database everytime the app is run, great for development but disable in production
-    }),
     CommonModule,
   ],
   controllers: [AppController],
