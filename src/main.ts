@@ -1,6 +1,8 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+
 import { AppModule } from './app.module';
+import { PrismaService } from './database/prisma.service';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ApiKeyGuard } from './common/guards/api-key.guard';
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
@@ -24,5 +26,7 @@ async function bootstrap() {
     new TimeoutInterceptor(),
   );
   await app.listen(4000);
+  const prismaService = app.get(PrismaService);
+  await prismaService.enableShutdownHooks(app);
 }
 bootstrap();
